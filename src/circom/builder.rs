@@ -39,14 +39,14 @@ impl std::iter::FromIterator<BigInt> for Inputs {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct CircomBuilder<E: Pairing> {
     pub cfg: CircomConfig<E>,
     pub inputs: HashMap<String, Inputs>,
 }
 
 // Add utils for creating this from files / directly from bytes
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct CircomConfig<E: Pairing> {
     pub r1cs: R1CS<E>,
     pub wtns: WitnessCalculator,

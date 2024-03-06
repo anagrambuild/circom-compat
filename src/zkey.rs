@@ -54,8 +54,11 @@ pub fn read_zkey<R: Read + Seek>(
     reader: &mut R,
 ) -> IoResult<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> {
     let mut binfile = BinFile::new(reader)?;
+    
     let proving_key = binfile.proving_key()?;
+    println!("read key");
     let matrices = binfile.matrices()?;
+    println!("read matrices");
     Ok((proving_key, matrices))
 }
 
@@ -80,6 +83,7 @@ impl<'a, R: Read + Seek> BinFile<'a, R> {
 
         let mut sections = HashMap::new();
         for _ in 0..num_sections {
+            
             let section_id = reader.read_u32::<LittleEndian>()?;
             let section_length = reader.read_u64::<LittleEndian>()?;
 
@@ -344,7 +348,7 @@ fn deserialize_g1<R: Read>(reader: &mut R) -> IoResult<G1Affine> {
     if infinity {
         Ok(G1Affine::identity())
     } else {
-        Ok(G1Affine::new(x, y))
+        Ok(G1Affine::new_unchecked(x, y))
     }
 }
 
@@ -355,7 +359,7 @@ fn deserialize_g2<R: Read>(reader: &mut R) -> IoResult<G2Affine> {
     if infinity {
         Ok(G2Affine::identity())
     } else {
-        Ok(G2Affine::new(f1, f2))
+        Ok(G2Affine::new_unchecked(f1, f2))
     }
 }
 
