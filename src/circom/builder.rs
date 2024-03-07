@@ -33,8 +33,8 @@ impl std::iter::FromIterator<BigInt> for Inputs {
         match items.len() {
             0 => panic!("Cannot create Value from an empty iterator"),
             1 => Inputs::BigInt(items[0].clone()),
-            2 => Inputs::BigIntVec(items),
-            _ => panic!("Cannot create Value from an iterator with more than 3 elements"),
+            _ => Inputs::BigIntVec(items),
+            
         }
     }
 }

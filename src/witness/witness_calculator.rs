@@ -8,6 +8,8 @@ use wasmer::{
 };
 #[cfg(feature = "llvm")]
 use wasmer_compiler_llvm::LLVM;
+#[cfg(not(feature = "llvm"))]
+use wasmer_compiler_singlepass::Singlepass;
 
 #[cfg(feature = "circom-2")]
 use num::ToPrimitive;
@@ -68,15 +70,16 @@ impl WitnessCalculator {
                 let compiler = LLVM::new();
                 let store = Store::new(compiler);
             } else {
-                let store = Store::default();
+                let compiler = Singlepass::new();
+                let store = Store::new(compiler);
             }
         }
         let bytes = std::fs::read(path.as_ref())?;
         let module = unsafe { Module::from_binary_unchecked(&store, &bytes)? };
-        Self::from_module(module, store)
+        Self::from_module(&module, store)
     }
 
-    pub fn from_module(module: Module, mut store: Store) -> Result<Self> {
+    pub fn from_module(module: &Module, mut store: Store) -> Result<Self> {
         // Set up the memory
         let memory = Memory::new(&mut store, MemoryType::new(2000, None, false)).unwrap();
         let import_object = imports! {

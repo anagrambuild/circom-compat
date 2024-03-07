@@ -22,8 +22,9 @@ rustflags = [
 
 [dependencies]
 # WASM operations
-wasmer = { version = "4.2.6", default-features = false }
-wasmer-compiler-llvm = { version = "4.2.6", optional = true }
+wasmer = { version = "=4.2.6", default-features = false }
+wasmer-compiler-singlepass = { version = "=4.2.6"}
+wasmer-compiler-llvm = { version = "=4.2.6", optional = true }
 fnv = { version = "=1.0.7", default-features = false }
 num = { version = "=0.4.1" }
 num-traits = { version = "=0.2.16", default-features = false }

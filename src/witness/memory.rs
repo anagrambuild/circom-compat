@@ -219,9 +219,9 @@ mod tests {
     use wasmer::{MemoryType, Store};
 
     fn new() -> (SafeMemory,Store) {
-        let store = Store::default();
+        let mut store = Store::default();
        ( SafeMemory::new(
-            Memory::new(&mut Store, MemoryType::new(1, None, false)).unwrap(),
+            Memory::new(&mut store, MemoryType::new(1, None, false)).unwrap(),
             2,
             BigInt::from_str(
                 "21888242871839275222246405745257275088548364400416034343698204186575808495617",
