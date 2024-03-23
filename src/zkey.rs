@@ -30,10 +30,12 @@ use ark_relations::r1cs::ConstraintMatrices;
 use ark_serialize::{CanonicalDeserialize, SerializationError};
 use ark_std::log2;
 use byteorder::{LittleEndian, ReadBytesExt};
+use memmap::Mmap;
+use std::fs::File;
 
 use std::{
     collections::HashMap,
-    io::{Read, Seek, SeekFrom},
+    io::{BufReader, Read, Seek, SeekFrom, Cursor},
 };
 
 use ark_bn254::{Bn254, Fq, Fq2, Fr, G1Affine, G2Affine};
@@ -49,16 +51,25 @@ struct Section {
     size: usize,
 }
 
+
+pub fn read_zkey_mapped(file_path: &str) -> IoResult<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> {
+    let file = File::open(file_path)?;
+    let mmap = unsafe { Mmap::map(&file)? };
+    let cursor = Cursor::new(&mmap[..]);
+    let mut reader = BufReader::new(cursor);
+    let mut binfile = BinFile::new(&mut reader)?;
+    let proving_key = binfile.proving_key()?;
+    let matrices = binfile.matrices()?;
+    Ok((proving_key, matrices))
+}
+
 /// Reads a SnarkJS ZKey file into an Arkworks ProvingKey.
 pub fn read_zkey<R: Read + Seek>(
     reader: &mut R,
 ) -> IoResult<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> {
     let mut binfile = BinFile::new(reader)?;
-    
     let proving_key = binfile.proving_key()?;
-    println!("read key");
     let matrices = binfile.matrices()?;
-    println!("read matrices");
     Ok((proving_key, matrices))
 }
 
@@ -160,7 +171,7 @@ impl<'a, R: Read + Seek> BinFile<'a, R> {
         let num_coeffs: u32 = self.reader.read_u32::<LittleEndian>()?;
 
         // insantiate AB
-        let mut matrices = vec![vec![vec![]; header.domain_size as usize]; 2];
+        let mut matrices = vec![vec![vec![]; header.domain_size as usize]; 3];
         let mut max_constraint_index = 0;
         for _ in 0..num_coeffs {
             let matrix: u32 = self.reader.read_u32::<LittleEndian>()?;
@@ -186,14 +197,12 @@ impl<'a, R: Read + Seek> BinFile<'a, R> {
             num_instance_variables: header.n_public + 1,
             num_witness_variables: header.n_vars - header.n_public,
             num_constraints,
-
             a_num_non_zero,
             b_num_non_zero,
             c_num_non_zero: 0,
-
             a,
             b,
-            c: vec![],
+            c: vec![]
         };
 
         Ok(matrices)
